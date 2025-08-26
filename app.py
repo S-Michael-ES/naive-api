@@ -43,5 +43,43 @@ def get_artists():
         if conn is not None:
             conn.close()
 
+
+@app.route('/api/tracks')
+def get_all_tracks():
+    conn = None
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        cur = conn.cursor()
+        
+        sql = """
+            SELECT t.track_title, a.artist_name, t.audio_file_url
+            FROM track t
+            JOIN release r ON t.release_id = r.release_id
+            JOIN artist_release ar ON r.release_id = ar.release_id
+            JOIN artist a ON ar.artist_id = a.artist_id
+            ORDER BY a.artist_name, t.track_title;
+        """
+        cur.execute(sql)
+        tracks_data = cur.fetchall()
+        cur.close()
+
+        tracks = []
+        for row in tracks_data:
+            tracks.append({
+                'title': row[0],
+                'artist': row[1],
+                'audio_url': row[2]
+            })
+        
+        return jsonify(tracks)
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        return jsonify({"error": "Database error"}), 500
+    finally:
+        if conn is not None:
+            conn.close()
+
+
 if __name__ == '__main__':
     app.run(debug=True)
