@@ -1,6 +1,7 @@
 import psycopg2
 import os
 from flask import Flask, jsonify
+from flask_cors import CORS
 
 DB_NAME = "naive"
 DB_USER = "postgres"
@@ -10,6 +11,7 @@ DB_PORT = "5432"
 
 DATABASE_URL = os.environ.get('DATABASE_URL', 'postgres://your_user:your_password@localhost:5432/naive')
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/api/artists')
 def get_artists():
